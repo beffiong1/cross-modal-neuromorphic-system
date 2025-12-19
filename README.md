@@ -1,7 +1,4 @@
 # Modality-Dependent Memory Mechanisms in Cross-Modal Neuromorphic Computing
-
-[![Paper](https://img.shields.io/badge/Paper-IEEE%20Computer-blue)](https://ieeexplore.ieee.org)
-[![arXiv](https://img.shields.io/badge/arXiv-2501.xxxxx-b31b1b.svg)](https://arxiv.org/abs/2501.xxxxx)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
