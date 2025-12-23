@@ -108,12 +108,22 @@ cross-modal-neuromorphic/
 git clone https://github.com/yourusername/cross-modal-neuromorphic.git
 cd cross-modal-neuromorphic
 
-# Create conda environment
+# Option A: Conda
 conda env create -f environment.yml
 conda activate cross-modal-neuromorphic
 
-# Or use pip
+# Option B: venv
+python -m venv .venv
+source .venv/bin/activate
+
+# Install project requirements (CPU/GPU agnostic)
 pip install -r requirements.txt
+
+# Install PyTorch (pick one)
+# CUDA (A100/GPUs; adjust cu121 if your driver targets another CUDA build)
+pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+# CPU-only
+# pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 ```
 
 ### Download Datasets
