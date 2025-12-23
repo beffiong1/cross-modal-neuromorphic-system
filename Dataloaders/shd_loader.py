@@ -1,75 +1,80 @@
 """
 SHD (Spiking Heidelberg Digits) Dataset Loader
-Spoken digits encoded through artificial cochlea
+Spoken digits encoded through artificial cochlea.
 """
 
+from __future__ import annotations
+
+from typing import List, Tuple
+
 import torch
-import h5py
-import numpy as np
-from torch.utils.data import Dataset, DataLoader
+import tonic
+from torch.utils.data import DataLoader, Dataset
+from tqdm import tqdm
 
-class SHDDataset(Dataset):
-    """Spiking Heidelberg Digits Dataset"""
-    
-    def __init__(self, file_path, train=True):
-        self.file_path = file_path
-        self.train = train
-        
-        with h5py.File(file_path, 'r') as f:
-            if train:
-                self.data = f['train']['spikes'][()]
-                self.labels = f['train']['labels'][()]
-            else:
-                self.data = f['test']['spikes'][()]
-                self.labels = f['test']['labels'][()]
-    
-    def __len__(self):
-        return len(self.labels)
-    
-    def __getitem__(self, idx):
-        # Convert sparse spike data to dense format
-        spike_data = self.data[idx]
-        label = self.labels[idx]
-        
-        # Process spike data (100 time steps, 700 channels)
-        # Implementation depends on your specific format
-        # This is a placeholder - adjust based on actual data format
-        dense_spikes = torch.tensor(spike_data, dtype=torch.float32)
-        label = torch.tensor(label, dtype=torch.long)
-        
-        return dense_spikes, label
 
-def get_shd_loaders(batch_size=32, file_path='./data/shd_dataset.h5', num_workers=2):
+class DenseSHDDataset(Dataset):
+    """Pre-converted SHD dataset with dense spike tensors."""
+
+    def __init__(self, data: List[Tuple[torch.Tensor, int]]):
+        self.data = data
+
+    def __len__(self) -> int:
+        return len(self.data)
+
+    def __getitem__(self, idx: int):
+        spikes, label = self.data[idx]
+        return spikes, torch.tensor(label, dtype=torch.long)
+
+
+def _events_to_dense(events) -> torch.Tensor:
+    time_bins, channels = 100, 700
+    dense = torch.zeros(time_bins, channels)
+
+    if len(events) > 0:
+        max_time = events["t"].max() if len(events) > 0 else 1
+        time_indices = (events["t"] / max_time * (time_bins - 1)).astype(int)
+        channel_indices = events["x"].astype(int)
+
+        for t, c in zip(time_indices, channel_indices):
+            if 0 <= t < time_bins and 0 <= c < channels:
+                dense[t, c] = 1.0
+
+    return dense.unsqueeze(1).unsqueeze(1)
+
+
+def get_shd_loaders(batch_size: int = 32, num_workers: int = 2, save_to: str = "./data"):
     """
-    Get SHD train and test data loaders
-    
-    Args:
-        batch_size: Batch size for training
-        file_path: Path to SHD HDF5 file
-        num_workers: Number of worker processes
-        
+    Get SHD train and test data loaders.
+
     Returns:
         train_loader, test_loader: PyTorch DataLoader objects
     """
-    
-    train_dataset = SHDDataset(file_path, train=True)
-    test_dataset = SHDDataset(file_path, train=False)
-    
+    train_dataset = tonic.datasets.SHD(save_to=save_to, train=True)
+    test_dataset = tonic.datasets.SHD(save_to=save_to, train=False)
+
+    train_data = []
+    for events, label in tqdm(train_dataset, desc="SHD train -> dense"):
+        train_data.append((_events_to_dense(events), label))
+
+    test_data = []
+    for events, label in tqdm(test_dataset, desc="SHD test -> dense"):
+        test_data.append((_events_to_dense(events), label))
+
     train_loader = DataLoader(
-        train_dataset,
+        DenseSHDDataset(train_data),
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
-        drop_last=True
+        drop_last=True,
     )
-    
     test_loader = DataLoader(
-        test_dataset,
+        DenseSHDDataset(test_data),
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
-        drop_last=False
+        drop_last=False,
     )
-    
-    print(f"✓ SHD loaded: {len(train_dataset)} train, {len(test_dataset)} test")
+
+    print(f"✓ SHD loaded: {len(train_data)} train, {len(test_data)} test")
     return train_loader, test_loader

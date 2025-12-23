@@ -44,13 +44,28 @@ def get_nmnist_loaders(batch_size=32, time_steps=25, num_workers=2):
         train=False
     )
     
+    def collate_fn(batch):
+        frames, labels = zip(*batch)
+        batch_size_local = len(frames)
+        channels = frames[0].shape[1]
+        height = frames[0].shape[2]
+        width = frames[0].shape[3]
+        padded = torch.zeros(batch_size_local, time_steps, channels, height, width, dtype=torch.float32)
+        for idx, f in enumerate(frames):
+            f_tensor = torch.as_tensor(f, dtype=torch.float32)
+            length = min(f_tensor.shape[0], time_steps)
+            padded[idx, :length] = f_tensor[:length]
+        labels_tensor = torch.tensor(labels, dtype=torch.long)
+        return padded, labels_tensor
+
     # Create data loaders
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
-        drop_last=True
+        drop_last=True,
+        collate_fn=collate_fn,
     )
     
     test_loader = DataLoader(
@@ -58,7 +73,8 @@ def get_nmnist_loaders(batch_size=32, time_steps=25, num_workers=2):
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
-        drop_last=False
+        drop_last=False,
+        collate_fn=collate_fn,
     )
     
     print(f"✓ N-MNIST loaded: {len(train_dataset)} train, {len(test_dataset)} test")
