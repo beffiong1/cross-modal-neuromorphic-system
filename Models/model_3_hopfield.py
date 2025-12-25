@@ -17,13 +17,21 @@ spike_grad = surrogate.fast_sigmoid(slope=25)
 class Model_3_Hopfield(nn.Module):
     """Model 3: Baseline + Hopfield memory."""
 
-    def __init__(self, input_type='nmnist', input_channels=2, input_size=700, num_classes=10):
+    def __init__(
+        self,
+        input_type="nmnist",
+        input_channels=2,
+        input_size=700,
+        spatial_size=(34, 34),
+        num_classes=10,
+    ):
         super().__init__()
         self.input_type = input_type
         self.backbone = build_backbone(
             input_type=input_type,
             input_channels=input_channels,
             input_size=input_size,
+            spatial_size=spatial_size,
             num_classes=num_classes,
         )
         self.hopfield = ModernHopfieldLayer(input_size=512, memory_size=256, temperature=0.1)

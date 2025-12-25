@@ -198,6 +198,19 @@ Features extracted via rate encoding: mean firing rate (proportion of timesteps 
 
 ### N-MNIST (Neuromorphic MNIST)
 - **Source**: Event-camera recordings of handwritten digits
+- **Sensor size**: 34 × 34 × 2 (H × W × polarity)
+
+### DVS-Gesture
+- **Source**: Event-camera recordings of hand/arm gestures (DVS128 Gesture)
+- **Sensor size**: 128 × 128 × 2 (H × W × polarity)
+
+### SHD (Spiking Heidelberg Digits)
+- **Source**: Spoken digits encoded through artificial cochlea
+- **Sensor size**: 700 channels
+
+### SSC (Spiking Speech Commands)
+- **Source**: Spoken commands encoded through artificial cochlea
+- **Sensor size**: 700 × 1 × 1
 - **Samples**: 60K train / 10K test
 - **Classes**: 10 (digits 0-9)
 - **Dimensions**: (25, 2, 34, 34) [time, polarity, height, width]

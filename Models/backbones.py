@@ -18,7 +18,12 @@ spike_grad = surrogate.fast_sigmoid(slope=25)
 class VisualBackbone(nn.Module):
     """Conv-based backbone for event vision inputs (e.g., N-MNIST)."""
 
-    def __init__(self, input_channels: int = 2, num_classes: int = 10):
+    def __init__(
+        self,
+        input_channels: int = 2,
+        num_classes: int = 10,
+        spatial_size: Tuple[int, int] = (34, 34),
+    ):
         super().__init__()
         self.conv1 = nn.Conv2d(input_channels, 64, 3, padding=1)
         self.lif1 = snn.Leaky(beta=0.9, spike_grad=spike_grad, init_hidden=True)
@@ -26,7 +31,8 @@ class VisualBackbone(nn.Module):
         self.conv2 = nn.Conv2d(64, 128, 3, padding=1)
         self.lif2 = snn.Leaky(beta=0.9, spike_grad=spike_grad, init_hidden=True)
 
-        self.fc1 = nn.Linear(128 * 34 * 34, 512)
+        height, width = spatial_size
+        self.fc1 = nn.Linear(128 * height * width, 512)
         self.lif3 = snn.Leaky(beta=0.9, spike_grad=spike_grad, init_hidden=True)
 
         self.fc_out = nn.Linear(512, num_classes)
@@ -104,10 +110,15 @@ def build_backbone(
     input_type: str,
     input_channels: int = 2,
     input_size: int = 700,
+    spatial_size: Tuple[int, int] = (34, 34),
     num_classes: int = 10,
 ) -> nn.Module:
-    if input_type == "nmnist":
-        return VisualBackbone(input_channels=input_channels, num_classes=num_classes)
-    if input_type == "shd":
+    if input_type in {"nmnist", "dvs_gesture"}:
+        return VisualBackbone(
+            input_channels=input_channels,
+            num_classes=num_classes,
+            spatial_size=spatial_size,
+        )
+    if input_type in {"shd", "ssc"}:
         return AudioBackbone(input_size=input_size, num_classes=num_classes)
     raise ValueError(f"Unknown input_type: {input_type}")

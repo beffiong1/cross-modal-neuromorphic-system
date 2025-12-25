@@ -29,6 +29,7 @@ def build_model(
     input_type: str,
     input_channels: int = 2,
     input_size: int = 700,
+    spatial_size: tuple[int, int] = (34, 34),
     num_classes: int = 10,
 ) -> nn.Module:
     if variant not in MODEL_REGISTRY:
@@ -38,5 +39,6 @@ def build_model(
         input_type=input_type,
         input_channels=input_channels,
         input_size=input_size,
+        spatial_size=spatial_size,
         num_classes=num_classes,
     )
