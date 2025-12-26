@@ -3,6 +3,7 @@ Modern Hopfield Network Layer
 Associative memory for pattern completion
 """
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
