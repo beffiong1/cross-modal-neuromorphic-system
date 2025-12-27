@@ -1,0 +1,3 @@
+Dataset,Train Samples,Test Samples,Classes,Modality,Input Shape,Time Steps
+DVS-Gesture,1077,264,11,Visual,"(2, 34, 34)",25
+SSC,75466,20382,35,Auditory,(700),100
